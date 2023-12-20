@@ -3,7 +3,9 @@ const client = new pg.Client('postgres://localhost/ice_crea')
 
 const express = require('express')
 const app = express()
+const cors = require('cors')
 
+app.use(cors())
 app.get('/', (req,res,next) =>{
     res.send("Hello world")
 })
@@ -42,22 +44,21 @@ app.get('/api/flavors/:id' , async (req,res,next) => {
         next(error)
     }
 })
-
-app.get('/api/flavors', async (req, res,next) =>{
-    try {
-        const SQL = `
-           SELECT *
-           FROM flavors
+//delete a flavor
+app.delete('/api/food/:id', async(req,res,next) =>{
+    try{
+        const SQL =`
+        DELETE FROM flavors WHERE id=$1
         `
-        const response = await client.query(SQL)
-        console.log(response.rows)
-        res.send(response.rows)
+        const response = await client.query(SQL, [req.params.id])
+        res.sendStatus(204)
 
-    } catch (error) {
-
+    }catch (error) {
+        next(error)
     }
 })
-//error message
+
+//error handler
 app.use((error, req, res, next) => {
     res.status(500)
     res.send(error)
